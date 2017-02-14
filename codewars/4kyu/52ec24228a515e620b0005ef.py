@@ -34,6 +34,8 @@ sum(80) # 15796476
 sum(100) # 190569292
 See here for more examples.
 
+http://blog.chinaunix.net/uid-26548237-id-3503956.html
+
 """
 import doctest
 
