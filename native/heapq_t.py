@@ -5,7 +5,13 @@
 import doctest
 import random
 from bisect import insort
-from heapq import cmp_lt
+
+try:
+    from heapq import cmp_lt
+except ImportError:
+    def cmp_lt(x, y):
+        return x < y
+
 from heapq import heapify
 from heapq import heappop
 from heapq import heappush
@@ -36,7 +42,8 @@ def simple_demo2():
     q = []
     for i in range(20):
         heappush(q, random.randint(0, 100))
-    print q
+    print
+    q
 
 
 REMOVED = object()
@@ -77,7 +84,8 @@ def priority_demo():
         q.add('Task {0}: priority {1}'.format(task, priority), priority)
     try:
         while True:
-            print q.pop()
+            print
+            q.pop()
     except KeyError:
         pass
 

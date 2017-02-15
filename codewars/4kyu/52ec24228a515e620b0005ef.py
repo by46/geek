@@ -50,7 +50,31 @@ def partition(n, m):
     if n > m:
         return partition(n, m - 1) + partition(n - m, m)
     if n < m:
-        return partition(n, n)
+        return partition(n, n - 1) + 1
+
+
+def exp_sum3(n):
+    if n < 0:
+        return 0
+    dp = {(i, j): 0 for i in range(n + 1) for j in range(n + 1)}
+    dp[(0, 0)] = 1
+    for i in range(1, n + 1):
+        for j in range(0, n + 1):
+            if j >= i:
+                dp[(i, j)] = dp[(i - 1, j)] + dp[(i, j - i)]
+            else:
+                dp[(i, j)] = dp[(i - 1, j)]
+    return dp[(n, n)]
+
+
+def exp_sum2(n):
+    if n < 0:
+        return 0
+    dp = [1] + [0] * n
+    for num in range(1, n + 1):
+        for i in range(num, n + 1):
+            dp[i] += dp[i - num]
+    return dp[-1]
 
 
 def exp_sum(n):
@@ -70,11 +94,15 @@ def exp_sum(n):
     7
     >>> exp_sum(10)
     42
+    >>> exp_sum(50)
+    204226
+    >>> exp_sum(80)
+    15796476
 
     :param n:
     :return:
     """
-    return partition(n, n)
+    return exp_sum3(n)
 
 
 if __name__ == '__main__':
