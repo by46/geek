@@ -67,6 +67,19 @@ def exp_sum3(n):
     return dp[(n, n)]
 
 
+def exp_sum4(n):
+    if n < 0:
+        return 0
+    dp = {(i, j): 0 for i in range(n + 1) for j in range(n + 1)}
+    dp[(0, 0)] = 1
+    for i in range(1, n + 1):
+        for j in range(0, n + 1):
+            dp[(i, j)] = dp[(i - 1, j)]
+            if j >= i:
+                dp[(i, j)] += dp[(i, j - i)]
+    return dp[(n, n)]
+
+
 def exp_sum2(n):
     if n < 0:
         return 0
@@ -102,7 +115,7 @@ def exp_sum(n):
     :param n:
     :return:
     """
-    return exp_sum3(n)
+    return exp_sum4(n)
 
 
 if __name__ == '__main__':
