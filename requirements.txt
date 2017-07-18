@@ -1,3 +1,10 @@
 requests
 xlwt
 pika
+SQLAlchemy
+Six
+Click
+pika
+flask
+gevent
+PyMsSQL
