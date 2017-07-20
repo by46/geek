@@ -104,7 +104,7 @@ def marshal_pre_login(params):
 
 if __name__ == '__main__':
     print parse_pre_login_packet(buf=data())
-    params = Bunch.fromDict(dict(MARS=1, THREADID=3087859712, ENCRYPTION=0))
-    stream = marshal_pre_login(params)
+    params2 = Bunch.fromDict(dict(MARS=1, THREADID=3087859712, ENCRYPTION=0))
+    stream = marshal_pre_login(params2)
     for b in stream:
         print "{0:02X} ".format(ord(b)),

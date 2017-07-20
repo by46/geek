@@ -42,3 +42,6 @@ session.commit()
 insp = inspect(cookie)
 for state in ['transient', 'pending', 'persistent', 'detached']:
     print('{:>10}: {}'.format(state, getattr(insp, state)))
+
+x = session.execute('SELECT * FROM cookies')
+print x
