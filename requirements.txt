@@ -1,3 +1,9 @@
+Six
+Click
+XLWT
+pika
+Flask
+Gevent
 requests
 xlwt
 pika
