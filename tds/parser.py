@@ -2,6 +2,8 @@ import struct
 from StringIO import StringIO
 from io import BytesIO
 
+from .encrypt import decrypt
+
 
 class PreLoginPacket(object):
     def __init__(self, buff):
@@ -41,6 +43,8 @@ class LoginPacket(object):
                 value = buf.read(length * 2)
                 value = ''.join([c for c in value if c != '\x00'])
                 object.__setattr__(self, field_name, value)
+
+        self.password = decrypt(self.password)
 
 
 class Parser(object):
@@ -121,7 +125,3 @@ a1 a5 91 a5 e0 a5 31 a5 e3 a5 83 a5 a6 a5 70 00
     stream = ''.join([chr(int(c, 16)) for c in stream])
     return StringIO(stream)
 
-
-if __name__ == '__main__':
-    parser = Parser(mock())
-    parser.parse()
