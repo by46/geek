@@ -32,3 +32,19 @@ def decrypt(text):
         num, = struct.unpack('!B', text[i])
         plain.append(decrypt_bets.get(num))
     return ''.join(plain)
+
+
+def encrypt(text):
+    # TODO(Benjamin): file
+    pass
+
+
+def decode(text):
+    return ''.join([c for c in text if c != '\x00'])
+
+
+def beautify_hex(text):
+    for i in range(0, len(text), 16):
+        tmp = [ord(c) for c in text[i:i + 16]]
+        fmt = "{:02X} " * len(tmp)
+        print fmt.format(*tmp)
