@@ -1,6 +1,37 @@
+from cStringIO import StringIO
+
+from tds.utils import b_varchar_encode
+
+
 class EnvChange(object):
-    def __init__(self):
-        pass
+    TOKEN_TYPE = 0xE3
+    FMT = "<BH{length}s"
+
+    def __init__(self, params=None):
+        """
+        
+        :param list[tuple(int, str, str)] params: 
+        """
+        self.buf = StringIO()
+        params = params or []
+        [self.add_param(*param) for param in params]
+
+    def add(self, env_type, old_value=None, new_value=None):
+        """
+        
+        :param int env_type: 
+        :param str old_value: 
+        :param str new_value: 
+        :return: 
+        """
+        self.buf.write(chr(env_type))
+        self.buf.write(b_varchar_encode(old_value))
+        self.buf.write(b_varchar_encode(new_value))
 
     def __str__(self):
-        return '\xe3\x15\x00\x01\x03\x43\x00\x54\x00\x49\x00\x06\x6d\x00\x61\x00\x73\x00\x74\x00\x65\x00\x72\x00\xab\x70\x00\x45\x16\x00\x00\x02\x00\x22\x00\x43\x00\x68\x00\x61\x00\x6e\x00\x67\x00\x65\x00\x64\x00\x20\x00\x64\x00\x61\x00\x74\x00\x61\x00\x62\x00\x61\x00\x73\x00\x65\x00\x20\x00\x63\x00\x6f\x00\x6e\x00\x74\x00\x65\x00\x78\x00\x74\x00\x20\x00\x74\x00\x6f\x00\x20\x00\x27\x00\x43\x00\x54\x00\x49\x00\x27\x00\x2e\x00\x10\x53\x00\x31\x00\x44\x00\x53\x00\x51\x00\x4c\x00\x30\x00\x34\x00\x5c\x00\x45\x00\x48\x00\x49\x00\x53\x00\x53\x00\x51\x00\x4c\x00\x00\x01\x00\xe3\x08'
+        return ''.join([' {0:02X}'.format(ord(c)) for c in self.marshal()])
+
+    def marshal(self):
+        message = self.buf.getvalue()
+        length = len(message)
+        return ''.join([chr(self.TOKEN_TYPE), chr(length), message])

@@ -48,3 +48,16 @@ def beautify_hex(text):
         tmp = [ord(c) for c in text[i:i + 16]]
         fmt = "{:02X} " * len(tmp)
         print fmt.format(*tmp)
+
+
+def b_varchar_encode(text):
+    """
+    encode with utf-16-le
+    Byte *Varchar
+    :param str text: 
+    :return: 
+    """
+    if not text:
+        return '\x00'
+    length = len(text)
+    return chr(length) + text.encode('utf-16-le')
