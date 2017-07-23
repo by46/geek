@@ -124,4 +124,3 @@ a1 a5 91 a5 e0 a5 31 a5 e3 a5 83 a5 a6 a5 70 00
     stream = data.split()
     stream = ''.join([chr(int(c, 16)) for c in stream])
     return StringIO(stream)
-
