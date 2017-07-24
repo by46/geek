@@ -11,6 +11,7 @@ class Done(StreamSerializer):
         self.status = status
         self.current_cmd = current_cmd
         self.done_row_count = done_row_count
+        super(Done, self).__init__()
 
     def marshal(self):
         return struct.pack(self.FMT, self.TOKEN_TYPE, self.status, self.current_cmd, self.done_row_count)

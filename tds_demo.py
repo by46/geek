@@ -11,7 +11,6 @@ from tds.tokens import Collation
 from tds.tokens import Done
 from tds.tokens import EnvChange
 from tds.tokens import Info
-from tds.tokens import Info2
 from tds.tokens import LoginAck
 from tds.utils import beautify_hex
 
@@ -63,9 +62,12 @@ def handle(sock, address):
             env = EnvChange()
             env.add(EnvChange.ENV_DATABASE, '4096', '4096')
             done = Done()
-            message = ''.join([x.marshal() for x in (env1, Info(), env2, env3, Info2(), ack, env, done)])
-            message = ''.join([x.marshal() for x in (env1, Info(), ack, env, done)])
-            # message = str(EnvChange())
+            info = Info()
+            info.msg = "Changed database context to 'CTI'."
+            info.server_name = 'S1DSQL04\\EHISSQL'
+            info.line_number = 10
+            # message = ''.join([x.marshal() for x in (env1, Info(), env2, env3, Info2(), ack, env, done)])
+            message = ''.join([x.marshal() for x in (env1, info, ack, env, done)])
             header = PacketHeader()
             header.packet_type = PacketHeader.TYPE_RESPONSE
             header.status = 1

@@ -1,13 +1,23 @@
+import struct
+from cStringIO import StringIO
 from io import BytesIO
 
 
 class StreamSerializer(object):
+    TOKEN_TYPE = 0x00
+
+    def __init__(self):
+        # self.buf = StringIO()
+        pass
+
     def marshal(self):
         """
         serialize into tds stream bytes stream
         :return: 
         """
-        return self.__class__.__name__
+        message = self.buf.getvalue()
+        length = len(message)
+        return ''.join([chr(self.TOKEN_TYPE), struct.pack('<H', length), message])
 
     def unmarshal(self, buf):
         """

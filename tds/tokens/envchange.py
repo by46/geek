@@ -21,6 +21,7 @@ class EnvChange(StreamSerializer):
         self.buf = StringIO()
         params = params or []
         [self.add_param(*param) for param in params]
+        super(EnvChange, self).__init__()
 
     def add(self, env_type, new_value=None, old_value=None, encode=None):
         """

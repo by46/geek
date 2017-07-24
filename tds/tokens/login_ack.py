@@ -13,6 +13,7 @@ class LoginAck(StreamSerializer):
         self.tds_version = 0x01000074
         self.program_name = ""
         self.program_version = (0, 0, 0, 0)
+        super(LoginAck, self).__init__()
 
     def marshal(self):
         program_name = b_varchar_encode(self.program_name)
