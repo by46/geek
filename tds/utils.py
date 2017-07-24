@@ -20,6 +20,12 @@ encrypt_bets = {'$': 231, '(': 39, ',': 103, '0': 166, '4': 230, '8': 38, '<': 1
                 '9': 54, '=': 118, 'A': 177, 'E': 241, 'I': 49, 'M': 113, 'Q': 176, 'U': 240, 'Y': 48, ']': 112,
                 'a': 179, 'e': 243, 'i': 51, 'm': 115, 'q': 178, 'u': 242, 'y': 50, '}': 114}
 
+LENGTH_FMT = {
+    1: '<B',
+    2: '<H',
+    4: '<L'
+}
+
 
 def decrypt(text):
     """
@@ -61,3 +67,38 @@ def b_varchar_encode(text):
         return '\x00'
     length = len(text)
     return chr(length) + text.encode('utf-16-le')
+
+
+def us_varchar_encode(text):
+    """
+    encode with utf-16-le
+    UShort *Varchar
+    :param str text: 
+    :return: 
+    """
+    if not text:
+        return '\x00\x00'
+    length = len(text)
+    return struct.pack('<H', length) + text.encode('utf-16-le')
+
+
+def b_varbyte_encode(value):
+    return varbyte_encode(value)
+
+
+def us_varbyte_encode(value):
+    return varbyte_encode(value, byte_length=2)
+
+
+def l_varbyte_encode(value):
+    return varbyte_encode(value, byte_length=4)
+
+
+def varbyte_encode(value, byte_length=1):
+    value = value or ''
+    length = len(value)
+    if byte_length not in LENGTH_FMT:
+        raise ValueError('byte_length should been 1, 2, 4')
+    fmt = LENGTH_FMT.get(byte_length)
+
+    return struct.pack(fmt, length) + value

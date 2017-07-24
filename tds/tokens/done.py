@@ -1,7 +1,9 @@
 import struct
 
+from tds.base import StreamSerializer
 
-class Done(object):
+
+class Done(StreamSerializer):
     TOKEN_TYPE = 0xFD
     FMT = '<BHHL'
 

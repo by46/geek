@@ -1,9 +1,10 @@
 import struct
 
+from tds.base import StreamSerializer
 from tds.utils import b_varchar_encode
 
 
-class LoginAck(object):
+class LoginAck(StreamSerializer):
     TOKEN_TYPE = 0xAD
     FMT = '<BHBL{length}s4B'
 

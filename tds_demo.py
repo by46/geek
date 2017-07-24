@@ -7,10 +7,12 @@ from tds import Parser
 from tds.packets import LoginPacket
 from tds.packets import PacketHeader
 from tds.packets import PreLoginPacket
-from tds.tokens import EnvChange
-from tds.tokens import LoginAck
-from tds.tokens import Info
+from tds.tokens import Collation
 from tds.tokens import Done
+from tds.tokens import EnvChange
+from tds.tokens import Info
+from tds.tokens import Info2
+from tds.tokens import LoginAck
 from tds.utils import beautify_hex
 
 
@@ -50,12 +52,18 @@ def handle(sock, address):
             sock.sendall(content)
         elif isinstance(packet, LoginPacket):
             env1 = EnvChange()
-            env1.add(1, 'master', 'CTI')
+            env1.add(1, 'CTI', 'master')
+            sql_collation = Collation()
+            env2 = EnvChange()
+            env2.add_bytes(EnvChange.ENV_SQL_COLLATION, sql_collation.marshal())
+            env3 = EnvChange()
+            env3.add(EnvChange.ENV_LANGUAGE, 'us_english')
             ack = LoginAck()
             ack.program_name = "TDS"
             env = EnvChange()
-            env.add(4, '4096', '4096')
+            env.add(EnvChange.ENV_DATABASE, '4096', '4096')
             done = Done()
+            message = ''.join([x.marshal() for x in (env1, Info(), env2, env3, Info2(), ack, env, done)])
             message = ''.join([x.marshal() for x in (env1, Info(), ack, env, done)])
             # message = str(EnvChange())
             header = PacketHeader()
