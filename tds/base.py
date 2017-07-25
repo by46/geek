@@ -24,8 +24,8 @@ class StreamSerializer(object):
         :param BytesIO buf: 
         """
 
-    def __str__(self):
-        return ''.join([' {0:02X}'.format(ord(c)) for c in self.marshal()])
-
-    def __repr__(self):
-        return ''.join([' {0:02X}'.format(ord(c)) for c in self.marshal()])
+    # def __str__(self):
+    #     return ''.join([' {0:02X}'.format(ord(c)) for c in self.marshal()])
+    #
+    # def __repr__(self):
+    #     return ''.join([' {0:02X}'.format(ord(c)) for c in self.marshal()])

@@ -74,7 +74,7 @@ class Parser(object):
         response = PreLoginStream()
         response.version = (1426128904, 0)
         response.encryption = PreLoginStream.ENCRYPT_NOT_SUP
-        response.inst_opt = '\x00'
+        response.inst_opt = ''
         response.thread_id = 1234
         header = PacketHeader()
         content = header.marshal(response)

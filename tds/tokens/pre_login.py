@@ -45,7 +45,7 @@ class PreLoginStream(StreamSerializer):
             if key == self.TERMINATOR:
                 continue
             name, fmt = self.OPTIONS.get(key)
-            if getattr(self, name, None):
+            if getattr(self, name, None) is not None:
                 options.append((key, name, fmt))
 
         offset = len(options) * 5 + 1
@@ -60,9 +60,12 @@ class PreLoginStream(StreamSerializer):
                 payload_data.write(struct.pack(fmt, *params))
                 offset += length
             else:
-                options_data.write(struct.pack('!BHH', key, offset, 1))
-                payload_data.write(getattr(self, name))
-                offset += 1
+                # inst_opt
+                value = getattr(self, name) + '\x00'
+                length = len(value)
+                options_data.write(struct.pack('!BHH', key, offset, length))
+                payload_data.write(value)
+                offset += length
 
         options_data.write(chr(0xFF))
         options_data.write(payload_data.getvalue())
@@ -81,6 +84,8 @@ class PreLoginStream(StreamSerializer):
             if token_type == self.TERMINATOR:
                 break
             position, length = struct.unpack("!HH", buf.read(4))
+            if not length:
+                continue
             old_position = buf.tell()
             buf.seek(position)
             tmp = buf.read(length)

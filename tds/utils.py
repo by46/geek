@@ -42,7 +42,7 @@ def decrypt(text):
 
 def encrypt(text):
     # TODO(Benjamin): file
-    pass
+    return ''.join([chr(encrypt_bets.get(c)) + '\xA5' for c in text])
 
 
 def decode(text):
