@@ -1,6 +1,6 @@
 from io import RawIOBase
 
-from tds.tokens import PreLoginStream
+from tds.tokens import Login7Stream
 
 
 class LoginRequest(object):
@@ -9,7 +9,7 @@ class LoginRequest(object):
 
         :param RawIOBase buf: 
         """
-        self.stream = stream = PreLoginStream()
+        self.stream = stream = Login7Stream()
         stream.unmarshal(buf)
 
     def __getattr__(self, item):

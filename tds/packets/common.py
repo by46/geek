@@ -52,10 +52,3 @@ class PacketHeader(StreamSerializer):
         self.buf.write(struct.pack('!HHBB', length, self.pid, self.packet_id, 0))
         self.buf.write(message)
         return self.buf.getvalue()
-        #
-        # def __repr__(self):
-        #     return str(self)
-        #
-        # def __str__(self):
-        #     return struct.pack(self.FMT, self.packet_type, self.status, self.length,
-        #                        self.pid, self.packet_id, self.window)

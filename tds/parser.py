@@ -1,10 +1,10 @@
 import logging
 from StringIO import StringIO
-from socket import socket
 from io import RawIOBase
+from socket import socket
 
-from tds.packets import LoginPacket
 from tds.packets import PacketHeader
+from tds.request import LoginRequest
 from tds.request import PreLoginRequest
 from tds.response import LoginResponse
 from tds.tokens import Collation
@@ -82,9 +82,13 @@ class Parser(object):
         self.conn.sendall(content)
 
     def on_login(self, header, buf):
-        packet = LoginPacket()
-        packet.unmarshal(buf)
-
+        """
+        
+        :param PacketHeader header: 
+        :param RawIOBase buf: 
+        """
+        packet = LoginRequest(buf)
+        logging.error('logging password %s', packet.password)
         response = LoginResponse()
         env1 = EnvChange()
         env1.add(1, 'CTI', 'master')
