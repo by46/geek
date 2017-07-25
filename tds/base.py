@@ -7,8 +7,7 @@ class StreamSerializer(object):
     TOKEN_TYPE = 0x00
 
     def __init__(self):
-        # self.buf = StringIO()
-        pass
+        self.buf = StringIO()
 
     def marshal(self):
         """
