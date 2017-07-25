@@ -1,14 +1,19 @@
 import struct
-from StringIO import StringIO
+from cStringIO import StringIO
 from io import BytesIO
 
 import six
 
-from .base import Packet
+from tds.base import StreamSerializer
 
 
-class PreLoginPacket(Packet):
-    __FIELDS__ = ['version', 'encryption', 'inst_opt', 'thread_id', 'mars', 'trace_id', 'fedauth_required', 'nonce_opt']
+class PreLoginStream(StreamSerializer):
+    TOKEN_TYPE = 0xAD
+    TERMINATOR = 0xFF
+    ENCRYPT_OFF = 0x00
+    ENCRYPT_ON = 0x01
+    ENCRYPT_NOT_SUP = 0x02
+    ENCRYPT_REQ = 0x03
     OPTIONS = {
         0x00: ('version', '!LH'),
         0x01: ('encryption', '!B'),
@@ -20,37 +25,19 @@ class PreLoginPacket(Packet):
         0x07: ('nonce_opt', '!32s'),
         0xFF: None
     }
-    TERMINATOR = 0xFF
 
-    def unmarshal(self, buf):
-        """
-
-        :param BytesIO buf: 
-        :return: 
-        """
-        while True:
-            token_type, = struct.unpack('!B', buf.read(1))
-            if token_type not in self.OPTIONS:
-                raise ValueError()
-            if token_type == self.TERMINATOR:
-                break
-            position, length = struct.unpack("!HH", buf.read(4))
-            old_position = buf.tell()
-            buf.seek(position)
-            tmp = buf.read(length)
-            name, fmt = self.OPTIONS.get(token_type)
-            if fmt:
-                values = struct.unpack(fmt, tmp)
-                setattr(self, name, values[0] if len(values) == 1 else values)
-            else:
-                setattr(self, name, tmp)
-            buf.seek(old_position)
+    def __init__(self):
+        self.version = None
+        self.encryption = None
+        self.inst_opt = None
+        self.thread_id = None
+        self.mars = None
+        self.trace_id = None
+        self.fedauth_required = None
+        self.nonce_opt = None
+        super(PreLoginStream, self).__init__()
 
     def marshal(self):
-        """
-        construct stream packet
-        :rtype: str 
-        """
         options_data = StringIO()
         payload_data = StringIO()
         options = []
@@ -80,3 +67,27 @@ class PreLoginPacket(Packet):
         options_data.write(chr(0xFF))
         options_data.write(payload_data.getvalue())
         return options_data.getvalue()
+
+    def unmarshal(self, buf):
+        """
+        
+        :param BytesIO buf: 
+        :return: 
+        """
+        while True:
+            token_type, = struct.unpack('!B', buf.read(1))
+            if token_type not in self.OPTIONS:
+                raise ValueError()
+            if token_type == self.TERMINATOR:
+                break
+            position, length = struct.unpack("!HH", buf.read(4))
+            old_position = buf.tell()
+            buf.seek(position)
+            tmp = buf.read(length)
+            name, fmt = self.OPTIONS.get(token_type)
+            if fmt:
+                values = struct.unpack(fmt, tmp)
+                setattr(self, name, values[0] if len(values) == 1 else values)
+            else:
+                setattr(self, name, tmp)
+            buf.seek(old_position)
