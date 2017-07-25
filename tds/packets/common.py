@@ -1,7 +1,10 @@
 import struct
 
+from tds.base import StreamSerializer
+from tds.response import Response
 
-class PacketHeader(object):
+
+class PacketHeader(StreamSerializer):
     FMT = "!BBHHBB"
     TYPE_BATCH = 1
     TYPE_PRE_TDS7 = 2
@@ -14,12 +17,13 @@ class PacketHeader(object):
     TYPE_PRE_LOGIN = 18
 
     def __init__(self):
-        self.packet_type = None
+        self.packet_type = self.TYPE_RESPONSE
         self.status = 1
         self.length = None
-        self.pid = 1
-        self.packet_id = 1
+        self.pid = 0
+        self.packet_id = 0
         self.window = 0
+        super(PacketHeader, self).__init__()
 
     def unmarshal(self, content):
         """
@@ -34,12 +38,24 @@ class PacketHeader(object):
         self.packet_id = packet_id
         self.window = window
 
-    def marshal(self):
-        return str(self)
-
-    def __repr__(self):
-        return str(self)
-
-    def __str__(self):
-        return struct.pack(self.FMT, self.packet_type, self.status, self.length,
-                           self.pid, self.packet_id, self.window)
+    def marshal(self, response):
+        """
+        
+        :param Response response: 
+        :return: 
+        """
+        message = response.marshal()
+        length = len(message) + 8
+        self.buf.truncate()
+        self.buf.write(chr(self.packet_type))
+        self.buf.write(chr(self.status))
+        self.buf.write(struct.pack('!HHBB', length, self.pid, self.packet_id, 0))
+        self.buf.write(message)
+        return self.buf.getvalue()
+        #
+        # def __repr__(self):
+        #     return str(self)
+        #
+        # def __str__(self):
+        #     return struct.pack(self.FMT, self.packet_type, self.status, self.length,
+        #                        self.pid, self.packet_id, self.window)
