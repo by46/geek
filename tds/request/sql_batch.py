@@ -1,16 +1,15 @@
-from io import RawIOBase
+from io import BytesIO
 
 from tds.tokens import SQLBatchStream
+from .base import Request
 
 
-class SQLBatchRequest(object):
+class SQLBatchRequest(Request):
     def __init__(self, buf):
         """
 
-        :param RawIOBase buf: 
+        :param BytesIO buf: 
         """
+        super(SQLBatchRequest, self).__init__()
         self.stream = stream = SQLBatchStream()
         stream.unmarshal(buf)
-
-    def __getattr__(self, item):
-        return getattr(self.stream, item)

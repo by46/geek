@@ -8,6 +8,9 @@ def main():
     cursor.execute('SELECT * FROM demo')
     for row in cursor.fetchall():
         print row
+    cursor.execute('SELECT * FROM demo')
+    for row in cursor.fetchall():
+        print row
 
     conn.close()
 

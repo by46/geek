@@ -21,4 +21,4 @@ class SQLBatchStream(StreamSerializer):
         :param BytesIO buf: 
         :return: 
         """
-        return buf.getvalue().decode('utf-16-le')
+        self.text = buf.getvalue().decode('utf-16-le')

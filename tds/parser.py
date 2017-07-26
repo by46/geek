@@ -1,12 +1,13 @@
 import logging
 from io import BytesIO
-from io import RawIOBase
 from socket import socket
+from time import time
 
 from tds.packets import PacketHeader
 from tds.pool import get_connection
 from tds.request import LoginRequest
 from tds.request import PreLoginRequest
+from tds.request import SQLBatchRequest
 from tds.response import LoginResponse
 from tds.tokens import Collation
 from tds.tokens import Done
@@ -14,7 +15,6 @@ from tds.tokens import EnvChange
 from tds.tokens import Info
 from tds.tokens import LoginAckStream
 from tds.tokens import PreLoginStream
-from tds.utils import beautify_hex
 
 db_conn = get_connection()
 
@@ -24,6 +24,7 @@ class Parser(object):
     :type conn: socket
     """
     PROCESS = {
+        0x01: 'on_batch',
         0x10: 'on_login',
         0x12: 'on_pre_login'
     }
@@ -41,19 +42,6 @@ class Parser(object):
             else:
                 logging.error('Unknown packet: %s', header.packet_type)
                 self.on_transfer(header, data)
-
-    def parse(self):
-        """
-        
-        :rtype:
-        """
-        header, data = self.parse_message_header()
-        if header.packet_type in self.PROCESS:
-            method = getattr(self, self.PROCESS.get(header.packet_type))
-            method(header, data)
-        else:
-            logging.error('Unknown packet', beautify_hex(header))
-            self.conn.close()
 
     def parse_message_header(self, conn=None):
         """
@@ -74,7 +62,7 @@ class Parser(object):
         """
         
         :param PacketHeader header: 
-        :param RawIOBase buf: 
+        :param BytesIO buf: 
         """
         request = PreLoginRequest(buf)
         response = PreLoginStream()
@@ -84,14 +72,13 @@ class Parser(object):
         response.thread_id = 1234
         header = PacketHeader()
         content = header.marshal(response)
-        beautify_hex(content)
         self.conn.sendall(content)
 
     def on_login(self, header, buf):
         """
         
         :param PacketHeader header: 
-        :param RawIOBase buf: 
+        :param BytesIO buf: 
         """
         packet = LoginRequest(buf)
         logging.error('logging password %s', packet.password)
@@ -121,14 +108,25 @@ class Parser(object):
 
         header = PacketHeader()
         content = header.marshal(response)
-        beautify_hex(content)
         self.conn.sendall(content)
+
+    def on_batch(self, header, buf):
+        """
+        
+        :param PacketHeader header: 
+        :param BytesIO buf: 
+        :return: 
+        """
+        cur = time()
+        request = SQLBatchRequest(buf)
+        self.on_transfer(header, buf)
+        logging.error('batch sql elapse %s : %s', time() - cur, request.text)
 
     def on_transfer(self, header, buf):
         """
         
         :param PacketHeader header: 
-        :param RawIOBase buf: 
+        :param BytesIO buf: 
         """
         message = header.marshal(buf)
         db_conn.sendall(message)

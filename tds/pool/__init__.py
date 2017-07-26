@@ -24,7 +24,7 @@ def get_connection():
     stream.thread_id = 9999
     packet = PacketHeader()
     packet.packet_type = PacketHeader.TYPE_PRE_LOGIN
-    beautify_hex(stream.marshal())
+    # beautify_hex(stream.marshal())
     conn.sendall(packet.marshal(stream))
 
     header = conn.recv(8)
@@ -57,7 +57,7 @@ def get_connection():
 
     packet = PacketHeader()
     packet.packet_type = PacketHeader.TYPE_LOGIN
-    beautify_hex(stream.marshal())
+    # beautify_hex(stream.marshal())
     conn.sendall(packet.marshal(stream))
 
     header = conn.recv(8)
