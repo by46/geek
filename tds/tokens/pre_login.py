@@ -1,5 +1,4 @@
 import struct
-from cStringIO import StringIO
 from io import BytesIO
 
 import six
@@ -38,8 +37,12 @@ class PreLoginStream(StreamSerializer):
         super(PreLoginStream, self).__init__()
 
     def marshal(self):
-        options_data = StringIO()
-        payload_data = StringIO()
+        """
+        
+        :rtype: bytes 
+        """
+        options_data = BytesIO()
+        payload_data = BytesIO()
         options = []
         for key in sorted(six.iterkeys(self.OPTIONS)):
             if key == self.TERMINATOR:
@@ -75,7 +78,6 @@ class PreLoginStream(StreamSerializer):
         """
         
         :param BytesIO buf: 
-        :return: 
         """
         while True:
             token_type, = struct.unpack('!B', buf.read(1))

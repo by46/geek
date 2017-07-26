@@ -1,5 +1,5 @@
 import logging
-from StringIO import StringIO
+from io import BytesIO
 from socket import socket
 
 from tds.packets import PacketHeader
@@ -8,7 +8,11 @@ from tds.tokens import PreLoginStream
 from tds.utils import beautify_hex
 
 
-def main():
+def get_connection():
+    """
+    
+    :rtype: socket 
+    """
     conn = socket()
     conn.connect(('10.1.25.24', 1433))
 
@@ -26,7 +30,7 @@ def main():
     header = conn.recv(8)
     packet.unmarshal(header)
     data = conn.recv(packet.length)
-    buf = StringIO(data)
+    buf = BytesIO(data)
     stream.unmarshal(buf)
 
     # login
@@ -59,11 +63,7 @@ def main():
     header = conn.recv(8)
     packet.unmarshal(header)
     data = conn.recv(packet.length)
-    buf = StringIO(data)
+    buf = BytesIO(data)
     stream.unmarshal(buf)
     logging.error(stream.username)
-    conn.close()
-
-
-if __name__ == '__main__':
-    main()
+    return conn

@@ -2,6 +2,7 @@ import struct
 
 from tds.base import StreamSerializer
 from tds.response import Response
+from io import RawIOBase
 
 
 class PacketHeader(StreamSerializer):
@@ -41,10 +42,13 @@ class PacketHeader(StreamSerializer):
     def marshal(self, response):
         """
         
-        :param Response response: 
+        :param Response | RawIOBase response: 
         :return: 
         """
-        message = response.marshal()
+        if hasattr(response, 'getvalue'):
+            message = response.getvalue()
+        else:
+            message = response.marshal()
         length = len(message) + 8
         self.buf.truncate()
         self.buf.write(chr(self.packet_type))

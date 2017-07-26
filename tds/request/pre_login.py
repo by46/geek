@@ -1,4 +1,4 @@
-from io import RawIOBase
+from io import BytesIO
 
 from tds.tokens import PreLoginStream
 
@@ -6,8 +6,8 @@ from tds.tokens import PreLoginStream
 class PreLoginRequest(object):
     def __init__(self, buf):
         """
-        
-        :param RawIOBase buf: 
+
+        :param BytesIO buf: 
         """
         self.stream = stream = PreLoginStream()
         stream.unmarshal(buf)

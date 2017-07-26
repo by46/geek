@@ -1,6 +1,5 @@
 import struct
-from cStringIO import StringIO
-from io import RawIOBase
+from io import BytesIO
 
 from tds.base import StreamSerializer
 from tds.utils import b_varchar_encode
@@ -38,7 +37,7 @@ class Login7Stream(StreamSerializer):
     def unmarshal(self, buf):
         """
         
-        :param RawIOBase buf: 
+        :param BytesIO buf: 
         """
         params = struct.unpack('<LLLLLLBBBBLL', buf.read(36))
         self.tds_version = params[1]
@@ -68,7 +67,7 @@ class Login7Stream(StreamSerializer):
             buf.seek(old_position)
 
     def marshal(self):
-        self.buf = StringIO()
+        self.buf = BytesIO()
         # token length place holder
         self.buf.write('\xFF\xFF\xFF\xFF')
         self.buf.write(struct.pack('<L', self.tds_version))
@@ -85,7 +84,7 @@ class Login7Stream(StreamSerializer):
 
         offset = self.buf.tell() + len(self.__FIELDS__) * 4 + 14
 
-        data = StringIO()
+        data = BytesIO()
         for field_name in self.__FIELDS__:
             value = getattr(self, field_name) or ''
             length = len(value)

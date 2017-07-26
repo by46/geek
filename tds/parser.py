@@ -1,9 +1,10 @@
 import logging
-from StringIO import StringIO
+from io import BytesIO
 from io import RawIOBase
 from socket import socket
 
 from tds.packets import PacketHeader
+from tds.pool import get_connection
 from tds.request import LoginRequest
 from tds.request import PreLoginRequest
 from tds.response import LoginResponse
@@ -14,6 +15,8 @@ from tds.tokens import Info
 from tds.tokens import LoginAckStream
 from tds.tokens import PreLoginStream
 from tds.utils import beautify_hex
+
+db_conn = get_connection()
 
 
 class Parser(object):
@@ -37,8 +40,7 @@ class Parser(object):
                 method(header, data)
             else:
                 logging.error('Unknown packet: %s', header.packet_type)
-                self.conn.close()
-                return
+                self.on_transfer(header, data)
 
     def parse(self):
         """
@@ -53,16 +55,20 @@ class Parser(object):
             logging.error('Unknown packet', beautify_hex(header))
             self.conn.close()
 
-    def parse_message_header(self):
+    def parse_message_header(self, conn=None):
         """
-        
-        :rtype: (PacketHeader, str)
+        :param socket conn:
+        :rtype: (PacketHeader, BytesIO)
         """
-        header = self.conn.recv(8)
+        conn = conn or self.conn
+        header = conn.recv(8)
         packet_header = PacketHeader()
         packet_header.unmarshal(header)
-        data = self.conn.recv(packet_header.length)
-        return packet_header, StringIO(data)
+        length = packet_header.length - 8
+        data = None
+        if length:
+            data = conn.recv(length)
+        return packet_header, BytesIO(data)
 
     def on_pre_login(self, header, buf):
         """
@@ -117,3 +123,15 @@ class Parser(object):
         content = header.marshal(response)
         beautify_hex(content)
         self.conn.sendall(content)
+
+    def on_transfer(self, header, buf):
+        """
+        
+        :param PacketHeader header: 
+        :param RawIOBase buf: 
+        """
+        message = header.marshal(buf)
+        db_conn.sendall(message)
+        header, buf = self.parse_message_header(db_conn)
+        message = header.marshal(buf)
+        self.conn.sendall(message)

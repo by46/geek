@@ -1,3 +1,7 @@
+import gevent.monkey
+
+# gevent.monkey.patch_all()
+import logging
 from socket import socket
 
 from fysom import Fysom
@@ -24,6 +28,7 @@ def handle(sock, address):
                       {'name': 'stop', 'src': 'pre_login', 'dst': 'stop'},
                       {'name': 'stop', 'src': 'login', 'dst': 'stop'},
                   ])
+    logging.error('address %s', address)
     parser = Parser(sock)
     parser.run()
 

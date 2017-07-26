@@ -1,5 +1,4 @@
 import struct
-from cStringIO import StringIO
 from io import BytesIO
 
 
@@ -7,7 +6,7 @@ class StreamSerializer(object):
     TOKEN_TYPE = 0x00
 
     def __init__(self):
-        self.buf = StringIO()
+        self.buf = BytesIO()
 
     def marshal(self):
         """
