@@ -31,6 +31,7 @@ class Parser(object):
         0x10: 'on_login',
         0x12: 'on_pre_login'
     }
+    PACKET_HEADER_LENGTH = 8
     conn = None
     user = None
     client_ip = None
@@ -57,10 +58,13 @@ class Parser(object):
         :rtype: (PacketHeader, BytesIO)
         """
         conn = conn or self.conn
-        header = conn.recv(8)
+        header = conn.recv(self.PACKET_HEADER_LENGTH)
+        if len(header) < self.PACKET_HEADER_LENGTH:
+            # TODO(benjamin): process disconnection
+            raise Exception()
         packet_header = PacketHeader()
         packet_header.unmarshal(header)
-        length = packet_header.length - 8
+        length = packet_header.length - self.PACKET_HEADER_LENGTH
         data = None
         if length:
             data = conn.recv(length)
