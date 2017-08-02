@@ -29,7 +29,7 @@ def handle(sock, address):
                       {'name': 'stop', 'src': 'login', 'dst': 'stop'},
                   ])
     logging.error('address %s', address)
-    parser = Parser(sock)
+    parser = Parser(sock, address)
     parser.run()
 
 

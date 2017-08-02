@@ -5,12 +5,17 @@ from socket import socket
 from tds.packets import PacketHeader
 from tds.tokens import Login7Stream
 from tds.tokens import PreLoginStream
-from tds.utils import beautify_hex
 
 
-def get_connection():
+def get_connection(user, password, server_name):
     """
+    user=CTIDbo
+    password=Dev@CTIdb0
+    server_name=S1DSQL04\\EHISSQL
     
+    :param str user: real user
+    :param str password: real password
+    :param str server_name: database instance
     :rtype: socket 
     """
     conn = socket()
@@ -47,10 +52,10 @@ def get_connection():
     stream.time_zone = 0xFFFFFF88
     stream.collation = 0x00000436
     stream.client_name = 'WCMIS035'
-    stream.username = "CTIDbo"
-    stream.password = "Dev@CTIdb0"
+    stream.username = user
+    stream.password = password
     stream.app_name = "pymssql=2.1.3"
-    stream.server_name = "S1DSQL04\\EHISSQL"
+    stream.server_name = server_name
     stream.lib_name = "DB-Library"
     stream.locale = 'us_english'
     stream.database = 'CTI'

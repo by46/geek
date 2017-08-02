@@ -1,10 +1,15 @@
 import logging
+from datetime import datetime
 from io import BytesIO
 from socket import socket
 from time import time
 
+from bunch import Bunch
+
+import pool
+import user
+from tds import mq
 from tds.packets import PacketHeader
-from tds.pool import get_connection
 from tds.request import LoginRequest
 from tds.request import PreLoginRequest
 from tds.request import SQLBatchRequest
@@ -15,8 +20,6 @@ from tds.tokens import EnvChange
 from tds.tokens import Info
 from tds.tokens import LoginAckStream
 from tds.tokens import PreLoginStream
-
-db_conn = get_connection()
 
 
 class Parser(object):
@@ -29,9 +32,14 @@ class Parser(object):
         0x12: 'on_pre_login'
     }
     conn = None
+    user = None
+    client_ip = None
+    database = None
+    db_conn = None
 
-    def __init__(self, conn):
+    def __init__(self, conn, address):
         self.conn = conn
+        self.client_ip = address[0]
 
     def run(self):
         while True:
@@ -81,6 +89,16 @@ class Parser(object):
         :param BytesIO buf: 
         """
         packet = LoginRequest(buf)
+        info = user.login(packet.username, packet.password)
+        if info is None:
+            # TODO(benjamin): process login failed
+            pass
+        self.db_conn = pool.get_connection(info.user, info.password, info.server_name)
+        self.user = packet.username
+        self.database = packet.database
+        event = self._make_event(event='login')
+        mq.send(event)
+
         logging.error('logging password %s', packet.password)
         response = LoginResponse()
         env1 = EnvChange()
@@ -120,7 +138,14 @@ class Parser(object):
         cur = time()
         request = SQLBatchRequest(buf)
         self.on_transfer(header, buf)
+        elapse = time() - cur
         logging.error('batch sql elapse %s : %s', time() - cur, request.text)
+        # TODO(benjamin): process error
+        event = self._make_event(event='batch')
+        event.elapse = elapse
+        event.text = request.text
+        event.error = None
+        mq.send(event)
 
     def on_transfer(self, header, buf):
         """
@@ -128,8 +153,20 @@ class Parser(object):
         :param PacketHeader header: 
         :param BytesIO buf: 
         """
+        event = self._make_event('input')
+        event.size = len(buf.getvalue())
+        mq.send(event)
         message = header.marshal(buf)
-        db_conn.sendall(message)
-        header, buf = self.parse_message_header(db_conn)
+        self.db_conn.sendall(message)
+        header, buf = self.parse_message_header(self.db_conn)
         message = header.marshal(buf)
         self.conn.sendall(message)
+
+    def _make_event(self, event):
+        stamp = datetime.now().strftime('%Y%m%d%H%M%S')
+
+        return Bunch(event=event,
+                     user=self.user,
+                     database=self.database,
+                     client_ip=self.client_ip,
+                     stamp=stamp)
