@@ -9,6 +9,7 @@ from bunch import Bunch
 import user
 from pool import manager
 from tds import mq
+from tds.exceptions import AbortException
 from tds.packets import PacketHeader
 from tds.request import LoginRequest
 from tds.request import PreLoginRequest
@@ -20,6 +21,12 @@ from tds.tokens import EnvChange
 from tds.tokens import Info
 from tds.tokens import LoginAckStream
 from tds.tokens import PreLoginStream
+
+EVENT_LOGIN = "login"
+EVENT_LOGOUT = "logout"
+EVENT_INPUT = "input"
+EVENT_OUTPUT = "output"
+EVENT_BATCH = "batch"
 
 
 class Parser(object):
@@ -39,19 +46,25 @@ class Parser(object):
     db_conn = None
     settings = {}
 
-    def __init__(self, conn, address):
+    def __init__(self, conn, address, logger=None):
+        self.logger = logger or logging.getLogger(__name__)
         self.conn = conn
         self.client_ip = address[0]
 
     def run(self):
         while True:
-            header, data = self.parse_message_header()
-            if header.packet_type in self.PROCESS:
-                method = getattr(self, self.PROCESS.get(header.packet_type))
-                method(header, data)
-            else:
-                logging.error('Unknown packet: %s', header.packet_type)
-                self.on_transfer(header, data)
+            try:
+                header, data = self.parse_message_header()
+                if header.packet_type in self.PROCESS:
+                    method = getattr(self, self.PROCESS.get(header.packet_type))
+                    method(header, data)
+                else:
+                    logging.error('Unknown packet: %s', header.packet_type)
+                    self.on_transfer(header, data)
+            except AbortException as e:
+                self.logger.exception(e)
+                self._send_logout_event()
+                break
 
     def parse_message_header(self, conn=None):
         """
@@ -62,7 +75,7 @@ class Parser(object):
         header = conn.recv(self.PACKET_HEADER_LENGTH)
         if len(header) < self.PACKET_HEADER_LENGTH:
             # TODO(benjamin): process disconnection
-            raise Exception()
+            raise AbortException()
         packet_header = PacketHeader()
         packet_header.unmarshal(header)
         length = packet_header.length - self.PACKET_HEADER_LENGTH
@@ -108,8 +121,7 @@ class Parser(object):
         }
         self.user = packet.username
         self.database = packet.database
-        event = self._make_event(event='login')
-        mq.send(event)
+        self._send_login_event()
 
         logging.error('logging password %s', packet.password)
         response = LoginResponse()
@@ -152,12 +164,8 @@ class Parser(object):
         self.on_transfer(header, buf)
         elapse = time() - cur
         logging.error('batch sql elapse %s : %s', time() - cur, request.text)
-        # TODO(benjamin): process error
-        event = self._make_event(event='batch')
-        event.elapse = elapse
-        event.text = request.text
-        event.error = None
-        mq.send(event)
+        # TODO(benjamin): process batch error
+        self._send_batch_event(elapse, request.text, error=None)
 
     def on_transfer(self, header, buf):
         """
@@ -165,22 +173,46 @@ class Parser(object):
         :param PacketHeader header: 
         :param BytesIO buf: 
         """
-        event = self._make_event('input')
-        event.size = len(buf.getvalue())
-        mq.send(event)
         message = header.marshal(buf)
         pool = manager.get_connection(self.settings)
         with pool.get() as conn:
             conn.sendall(message)
+            self._send_input_event(message)
             header, buf = self.parse_message_header(conn)
         message = header.marshal(buf)
         self.conn.sendall(message)
+        self._send_output_event(message)
 
     def _make_event(self, event):
-        stamp = datetime.now().strftime('%Y%m%d%H%M%S')
+        stamp = datetime.now().strftime('%Y%m%d%H%M%S%f')[:-3]
 
         return Bunch(event=event,
                      user=self.user,
                      database=self.database,
                      client_ip=self.client_ip,
                      stamp=stamp)
+
+    def _send_output_event(self, message):
+        event = self._make_event(event=EVENT_OUTPUT)
+        event.size = len(message)
+        mq.send(event)
+
+    def _send_input_event(self, message):
+        event = self._make_event(event=EVENT_INPUT)
+        event.size = len(message)
+        mq.send(event)
+
+    def _send_batch_event(self, elapse, text, error):
+        event = self._make_event(event=EVENT_BATCH)
+        event.elapse = elapse
+        event.text = text
+        event.error = error
+        mq.send(event)
+
+    def _send_login_event(self):
+        event = self._make_event(event=EVENT_LOGIN)
+        mq.send(event)
+
+    def _send_logout_event(self):
+        event = self._make_event(event=EVENT_LOGOUT)
+        mq.send(event)
