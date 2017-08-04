@@ -6,8 +6,8 @@ from time import time
 
 from bunch import Bunch
 
-import pool
 import user
+from pool import manager
 from tds import mq
 from tds.packets import PacketHeader
 from tds.request import LoginRequest
@@ -37,6 +37,7 @@ class Parser(object):
     client_ip = None
     database = None
     db_conn = None
+    settings = {}
 
     def __init__(self, conn, address):
         self.conn = conn
@@ -97,7 +98,14 @@ class Parser(object):
         if info is None:
             # TODO(benjamin): process login failed
             pass
-        self.db_conn = pool.get_connection(info.user, info.password, info.server_name)
+        self.settings = {
+            "user": "CTIDbo",
+            "password": "Dev@CTIdb0",
+            "instance": "S1DSQL04\\EHISSQL",
+            "database": "CTI",
+            "ip": "S1DSQL04",
+            "port": 1433
+        }
         self.user = packet.username
         self.database = packet.database
         event = self._make_event(event='login')
@@ -161,8 +169,10 @@ class Parser(object):
         event.size = len(buf.getvalue())
         mq.send(event)
         message = header.marshal(buf)
-        self.db_conn.sendall(message)
-        header, buf = self.parse_message_header(self.db_conn)
+        pool = manager.get_connection(self.settings)
+        with pool.get() as conn:
+            conn.sendall(message)
+            header, buf = self.parse_message_header(conn)
         message = header.marshal(buf)
         self.conn.sendall(message)
 

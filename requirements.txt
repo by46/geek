@@ -16,3 +16,4 @@ gevent
 PyMsSQL
 bunch
 Fysom
+GeventConnPool

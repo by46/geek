@@ -5,6 +5,9 @@ from socket import socket
 from tds.packets import PacketHeader
 from tds.tokens import Login7Stream
 from tds.tokens import PreLoginStream
+from .poolmanager import PoolManager
+
+manager = PoolManager(size=1)
 
 
 def get_connection(user, password, server_name):
