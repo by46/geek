@@ -17,7 +17,6 @@ from tds.request import SQLBatchRequest
 from tds.response import LoginResponse
 from tds.tokens import Collation
 from tds.tokens import DoneStream
-from tds.base import StreamSerializer
 from tds.tokens import EnvChangeStream
 from tds.tokens import InfoStream
 from tds.tokens import LoginAckStream
