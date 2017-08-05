@@ -3,7 +3,7 @@ from tds.utils import b_varbyte_encode
 from tds.utils import b_varchar_encode
 
 
-class EnvChange(StreamSerializer):
+class EnvChangeStream(StreamSerializer):
     TOKEN_TYPE = 0xE3
     ENV_LANGUAGE = 0x02
     ENV_DATABASE = 0x04
@@ -14,7 +14,7 @@ class EnvChange(StreamSerializer):
         
         :param list[tuple(int, str, str)] params: 
         """
-        super(EnvChange, self).__init__()
+        super(EnvChangeStream, self).__init__()
         params = params or []
         [self.add_param(*param) for param in params]
 

@@ -16,9 +16,10 @@ from tds.request import PreLoginRequest
 from tds.request import SQLBatchRequest
 from tds.response import LoginResponse
 from tds.tokens import Collation
-from tds.tokens import Done
-from tds.tokens import EnvChange
-from tds.tokens import Info
+from tds.tokens import DoneStream
+from tds.base import StreamSerializer
+from tds.tokens import EnvChangeStream
+from tds.tokens import InfoStream
 from tds.tokens import LoginAckStream
 from tds.tokens import PreLoginStream
 
@@ -125,19 +126,19 @@ class Parser(object):
 
         logging.error('logging password %s', packet.password)
         response = LoginResponse()
-        env1 = EnvChange()
+        env1 = EnvChangeStream()
         env1.add(1, 'CTI', 'master')
         sql_collation = Collation()
-        env2 = EnvChange()
-        env2.add_bytes(EnvChange.ENV_SQL_COLLATION, sql_collation.marshal())
-        env3 = EnvChange()
-        env3.add(EnvChange.ENV_LANGUAGE, 'us_english')
+        env2 = EnvChangeStream()
+        env2.add_bytes(EnvChangeStream.ENV_SQL_COLLATION, sql_collation.marshal())
+        env3 = EnvChangeStream()
+        env3.add(EnvChangeStream.ENV_LANGUAGE, 'us_english')
         ack = LoginAckStream()
         ack.program_name = "TDS"
-        env = EnvChange()
-        env.add(EnvChange.ENV_DATABASE, '4096', '4096')
-        done = Done()
-        info = Info()
+        env = EnvChangeStream()
+        env.add(EnvChangeStream.ENV_DATABASE, '4096', '4096')
+        done = DoneStream()
+        info = InfoStream()
         info.msg = "Changed database context to 'CTI'."
         info.server_name = 'S1DSQL04\\EHISSQL'
         info.line_number = 10
@@ -167,19 +168,21 @@ class Parser(object):
         # TODO(benjamin): process batch error
         self._send_batch_event(elapse, request.text, error=None)
 
-    def on_transfer(self, header, buf):
+    def on_transfer(self, header, buf, parse_token=False):
         """
         
         :param PacketHeader header: 
         :param BytesIO buf: 
+        :param bool parse_token: 
+        :rtype: [StreamSerializer]
         """
         message = header.marshal(buf)
         pool = manager.get_connection(self.settings)
         with pool.get() as conn:
             conn.sendall(message)
             self._send_input_event(message)
-            header, buf = self.parse_message_header(conn)
-        message = header.marshal(buf)
+            header, response_buf = self.parse_message_header(conn)
+        message = header.marshal(response_buf)
         self.conn.sendall(message)
         self._send_output_event(message)
 

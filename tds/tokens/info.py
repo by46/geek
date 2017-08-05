@@ -5,7 +5,7 @@ from tds.utils import b_varchar_encode
 from tds.utils import us_varchar_encode
 
 
-class Info(StreamSerializer):
+class InfoStream(StreamSerializer):
     TOKEN_TYPE = 0xAB
 
     def __init__(self):
@@ -16,7 +16,7 @@ class Info(StreamSerializer):
         self.server_name = None
         self.process_name = None
         self.line_number = 0
-        super(Info, self).__init__()
+        super(InfoStream, self).__init__()
 
     def marshal(self):
         self.buf.truncate()
@@ -27,7 +27,7 @@ class Info(StreamSerializer):
         self.buf.write(b_varchar_encode(self.server_name))
         self.buf.write(b_varchar_encode(self.process_name))
         self.buf.write(struct.pack('<H', self.line_number))
-        return super(Info, self).marshal()
+        return super(InfoStream, self).marshal()
 
 
 class Info31(StreamSerializer):

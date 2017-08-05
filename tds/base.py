@@ -20,11 +20,13 @@ class StreamSerializer(object):
     def unmarshal(self, buf):
         """
         unserialize info from tds stream bytes stream
-        :param BytesIO buf: 
+        :param BytesIO buf:
+        :rtype: bool
         """
+        return True
 
-    # def __str__(self):
-    #     return ''.join([' {0:02X}'.format(ord(c)) for c in self.marshal()])
-    #
-    # def __repr__(self):
-    #     return ''.join([' {0:02X}'.format(ord(c)) for c in self.marshal()])
+        # def __str__(self):
+        #     return ''.join([' {0:02X}'.format(ord(c)) for c in self.marshal()])
+        #
+        # def __repr__(self):
+        #     return ''.join([' {0:02X}'.format(ord(c)) for c in self.marshal()])
