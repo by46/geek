@@ -1,8 +1,0 @@
-Six
-Click
-XLWT
-pika
-Flask
-Gevent
-GeventConnPool
-Requests
