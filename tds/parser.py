@@ -21,6 +21,7 @@ from tds.tokens import EnvChangeStream
 from tds.tokens import InfoStream
 from tds.tokens import LoginAckStream
 from tds.tokens import PreLoginStream
+from tds.tokens import parse_tokens
 
 EVENT_LOGIN = "login"
 EVENT_LOGOUT = "logout"
@@ -184,6 +185,7 @@ class Parser(object):
         message = header.marshal(response_buf)
         self.conn.sendall(message)
         self._send_output_event(message)
+        items = parse_tokens(response_buf)
 
     def _make_event(self, event):
         stamp = datetime.now().strftime('%Y%m%d%H%M%S%f')[:-3]
