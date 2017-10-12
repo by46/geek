@@ -7,6 +7,7 @@ from sqlalchemy import Table
 from sqlalchemy import Text
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import column_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import sessionmaker
 
@@ -25,10 +26,11 @@ class User(Base):
     name = Column(String)
     fullname = Column(String)
     password = Column(String)
+    title = column_property(name + ' ' + fullname)
 
     def __repr__(self):
-        return "<User(Id={3}, name='{0}', fullname='{1}', password='{2}'>".format(
-            self.name, self.fullname, self.password, self.id)
+        return "<User(Id={3}, name='{0}', fullname='{1}', password='{2}', title={3}>".format(
+            self.name, self.fullname, self.password, self.id, self.title)
 
 
 class BlogPost(Base):
