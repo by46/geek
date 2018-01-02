@@ -17,3 +17,5 @@ PyMsSQL
 bunch
 Fysom
 GeventConnPool
+redis
+Flask-Cache

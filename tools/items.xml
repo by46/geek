@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<!DOCTYPE select_item_itemcatalog_from_abs_dbo_arinvt01_with_nolock_ [
+        <!ELEMENT select_item_itemcatalog_from_abs_dbo_arinvt01_with_nolock_ (DATA_RECORD*)>
+        <!ELEMENT DATA_RECORD (item?,itemcatalog?)+>
+        <!ELEMENT item (#PCDATA)>
+        <!ELEMENT itemcatalog (#PCDATA)>
+        ]>
+<select_item_itemcatalog_from_abs_dbo_arinvt01_with_nolock_>
+    <DATA_RECORD>
+        <item>EIMS-001</item>
+        <itemcatalog>-1</itemcatalog>
+    </DATA_RECORD>
+    <DATA_RECORD>
+        <item>EIMS-002</item>
+        <itemcatalog>-1</itemcatalog>
+    </DATA_RECORD>
+    <DATA_RECORD>
+        <item>EIMS-003</item>
+        <itemcatalog>-1</itemcatalog>
+    </DATA_RECORD>
+</select_item_itemcatalog_from_abs_dbo_arinvt01_with_nolock_>
